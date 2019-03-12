@@ -1,0 +1,627 @@
+For the miniproject, I only finished the first 3 steps. 
+My testing would follow the process of my design and implementation.
+
+Start myShell by running  ./myShell
+At the beginning, you will see that myShell prints "myShell:/home/wc148/ece551/mp_miniproject $".
+It shows the current directory before the $.
+
+Then you can enter the command and hit enter to run the command.
+MyShell would give the corresponding results and another prompt.
+
+The following commands are all run in the myShell.
+
+
+(1) Run
+    /bin/ls
+    
+    You will see it prints a list of files and directories under the current directory,
+    followed by: 
+    Program exited with status 0
+    
+    This is correct because command /bin/ls is an absolute path, we just look in the specified
+    directory and excute the program. And our result does realize the function of listing.
+    After the program exits, myShell prints the corresponding exit message.
+    
+(2) Run
+    /bin/aaaa
+    
+    You will see it prints:
+    Command /bin/aaaa not found
+    Program exited with status 1
+    
+    This is correct because there is no such program under the specified directory.
+    So myShell prints an error message indicating the problem.
+    
+(3) Directly hit enter without any input.
+    
+    You will see it prints:
+    No command input.
+    
+    This is correct because there is no input and we do not excute a program. So myShell prints
+    an error message and have no exit message.
+    
+(4) Run 
+    ./myShell
+    
+    You will see it prints another prompt:
+    myShell:/home/wc148/ece551/mp_miniproject $
+    
+    This is correct because command ./myShell is a relative path, we follow the path and execute
+    the program. And this program opens another shell. Later we would use "exit" to prove this is 
+    another new shell.
+    
+(5) Run
+    ./aaaa
+    
+    You will see it prints:
+    Command ./aaaa not found
+    Program exited with status 1
+    
+    This is correct because there is no such program under the specified directory.
+    So myShell prints an error message indicating the problem.
+
+(6) Follow the step(4), we then run
+    exit
+    
+    You will see it prints:
+    Program exited with status 0
+    and another prompt:
+    myShell:/home/wc148/ece551/mp_miniproject $
+    
+    This is correct because command exit would make the shell exit. We opened a new program 
+    before and we now exit it, returning to the first shell. Later we would use EOF to prove 
+    this is the first shell.
+    
+(7) Follow the step(4)(6),
+    Run
+    EOF (Ctrl+D with keyboard)
+    
+    You will see we exit the shell and return to our server. 
+    
+    This is correct beacause EOF is encountered and we are at the first shell, we would exit 
+    the program and return to the server.
+    
+(8) For this testcase, we use a program called segfault, which would cause a segmentation fault. 
+    It is under the directory /home/wc148/ece551/mp_miniproject.
+    Make sure you are under this directory to run the program.
+    
+    Run
+    ./segfault
+    
+    You will see it prints:
+    Program was killed by signal 11
+    
+    This is correct because our program has the problem of segmentation fault. The program was killed
+    and the signal 11 just indicated segmentation fault.
+    
+(9) Run:(Several lines of commands mean that we run the commands one by one)
+    ./myShell
+    env
+    
+    You will a list of environment variable,including:
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+    ECE551PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+    
+    This is correct because in my implementation, every time we start the shell, we would initialize the
+    ECE551PATH environment variable with the value of PATH.
+    
+(10) Run
+     ls
+    
+    You will see it prints a list of files and directories under the current directory,
+    followed by: 
+    Program exited with status 0
+    
+    This is correct because for a command name without a /, we would search each directory specified in 
+    the ECE551PATH. And we can find the ls under the directory /bin, so we execute it and get the results.
+    Later we would prove that we are search the directories in the ECE551PATH, not in the PATH.
+    
+(11) Run
+     aaaa
+     
+     You will see it prints:
+     Command aaaa not found
+     Program exite with status 1
+     
+     This is correct because there is no file with the name aaaa in the directories specified in the ECE551PATH.
+     We could not find it.
+
+(12) Run
+     echo mp
+     
+     You will see it prints:
+     mp
+     Program exited with status 0
+     
+     This is correct because command echo is under the directory /bin. We could find the directory in the 
+     ECE551PATH.
+     Command echo is useful later so we want to prove that it is valid.
+     
+(13) For next several testcases, we use a program called test_multiargv, which would print the input arguments. 
+     It is under the directory /home/wc148/ece551/mp_miniproject.
+     Make sure you are under this directory to run the program.
+     
+     Run
+     ./test_multiargv a b 23
+     
+     You will see it prints:
+     argv[0]: ./test_multiargv
+     argv[1]: a
+     argv[2]: b
+     argv[3]: 23
+     Program exited with status 0
+     
+     This is correct because we take the arguments separated by white space. So here is one command and three 
+     arguments. They are separated and printed by my program.
+        
+(14) Run
+         ./test_multiargv       a       b      23  
+     (There are white space before the ./test_multiargv.)
+     
+     You will see it prints:
+     argv[0]: ./test_multiargv
+     argv[1]: a
+     argv[2]: b
+     argv[3]: 23
+     Program exited with status 0
+     
+     This is correct because any amount of whitespace in between arguments would be treated as one whitespace and used
+     to separate the arguments.
+     
+(15) For the escaped situation, I only consider the escaped whitespace. So only "\ " would interpret as " " in an argument.
+     Run
+     ./test_multiargv    \      \ a b c\     d\ \ e\\ f\\
+     (It is actually "./test_multiargv    \      \ a b c\     d\ \ e\\ f\\")
+     
+     You will see it prints:
+     argv[0]: ./test_multiargv
+     argv[1]:  
+     (It is actually " ")
+     argv[2]:  a
+     argv[3]: b
+     argv[4]: c 
+     (It is actually "c ")
+     argv[5]: d  e\ f\\
+     Program exited with status 0
+     
+     This is correct because in my implementation, the input command was first translated as:
+     ./test_multiargv \  \ a b c\  d\ \ e\\ f\\
+     Different arguments are separated by whitespace. And whitespace with a \ was escaped included in some argument.
+     But there is another way to treat whitespace and arguments when run command set. We would show it later.
+     
+(16) For command cd, set, export, inc, we do not call a child thread to deal with them. So there would be no exit or killed
+     messages.
+     But we would deliver error messages when problems arise and return to the main function rather than using exit(EXIT_FAILURE)
+     mostly.
+
+     Run
+     cd /bin
+
+     You will see it prints:
+     myShell:/bin $
+
+     This is correct because command cd changes the working directory. With a full path input, we would change to that directory.
+     Also, we can now run ./ls to prove that we were really under that directory.
+
+(17) Run
+     cd ~
+
+     You will see it prints:
+     myShell:/home/wc148 $
+
+     This is correct because in my implementation, the working directory would change to the home when using ~. The home directory
+     is /home/wc148.
+
+(18) Follow step(17)
+     Run
+     cd ece551
+
+     You will see it prints:
+     myShell:home/wc148/ece551 $
+
+     This is correct because when the path name does not contain a /, it means open a directory under the current directory. So we
+     opened the ece551 under wc148.
+
+(19) Follow step(17)
+     Run
+     cd ece550
+
+     You will see it prints:
+     Cannot change the directory.
+
+     This is correct because there was no such directory under wc148. So we could not open the directory and we exit the program
+     using exit(EXIT_FAILURE) here.
+
+(20) Follow step(18)
+     Run
+     cd README.txt
+
+     You will see it prints;
+     Cannot change the directory.
+
+     This is correct because README.txt is not a directory although it exists under the directory ece551. So we could not open the
+     directory and we exit the program using exit(EXIT_FAILURE) here.
+
+(21) Follow step(18)
+     Run
+     cd ..
+
+     You will see it prints:
+     myShell::/home/wc148 $
+
+     This is correct because cd .. means return to the previous directory. So we change from /home/wc148/ece551 to /home/wc148.
+
+(22) Run
+     cd     or    cd a b
+
+     You will see it prints;
+     Wrong number of arguments
+
+     This is correct because cd takes one argument. So we deliver error messages when the input format is wrong.
+
+(23) Unless stated, we would test every command set based on the aasumption that there is no connection between different testcases.
+     Every time we test, we would clear the set history.
+     
+     Run
+     set a  
+     (It is actually "set a  ")
+     echo $a
+
+     You will see it prints:
+     (Actually nothing)
+
+     This is correct because in my implementation, we would first get the first two arguments separated by whitespace. And then
+     we would find the next character after the variable name that is not whitespace and store all the characters starting from the
+     not-whitespace character. So in the variable value, "\ " is not translated as " ", several whitespace are not treated as one.
+     They are all treated as a whole string to be the variable value.
+     So here there is no non-whitespace character after the variable name. a's value is "".
+     Here is a small problem that we can never set a variable to a whitespace " " or mutiple whitespcae.
+
+(24) Run
+     set a 1
+     set ab 2
+     set abc 3
+     echo $a$ab$abc
+
+     You will see it prints:
+     123
+
+     This is correct because in my implementation, $ evaluation always finds the longest match of the variable. So the $abc would
+     not be evaluated as 1bc or 2c. It should be 3. $ab is the same.
+     Also, we can see that for the variable a we set before, its value is updated.
+
+(25) Run
+     set a hello \ world
+     echo $a
+
+     You will see it prints:
+     hello  world
+
+     This is correct because for variable a itself, it is "hello \ world". But when we run command echo, it would parse our command
+     first and translate "\ " in the argument "\ world" to " ".
+     And if I run echo hello  world, the result is hello world. Actually there is only one whitespace in between.
+     When I run echo hello \ world, the result is the same as echo $a.
+
+(26) Run
+     set a!@d 1
+
+     You will see it prints:
+     Invalid variable name.
+
+     This is correct because a variable name must be a combination of letters, underscores, and numbers.
+
+(27) Run
+     set A_1 A
+     set a_1 a
+     echo $A_1$a_1
+
+     You will see it prints:
+     Aa
+
+     This is correct because a variable name must be a combination of letters(case-sensitive), underscores, and numbers.
+    
+(28) Run
+     set      or    set a(It is actually "set a")
+
+     You will see it prints:
+     Wrong number of arguments
+
+     This is correct because there should be three arguments and the second one and the third one should have at least one
+     whitespace in between to separate them.
+
+(29) Run
+     set a 1
+     set b $a
+     echo $b
+
+     You will see it prints:
+     1
+
+     This is correct because when run set b $a, we would evaluate $a to 1 before set b. So it is equal to set b 1.
+
+(30) Run
+     set a set
+     $a  a !@#
+     echo $a
+
+     You will see it prints;
+     !@#
+
+     This is correct because we always do $ evuluation first. So $a a !@# is equal to set a !@#. And then a's value is changed
+     to !@#.
+
+(31) Run
+     set a a
+     set a $aa
+     echo $a
+
+     You will see it prints:
+     aa
+
+     This is correct because $a is evaluated to a. So command set a $aa is equal to set a aa. a's value is changed to aa then.
+
+(32) Run
+     set a b
+     set a $a$a
+     echo $a
+
+     You will see it prints:
+     bb
+
+     This is correct because $a is equal to b. $a$a is equal to bb. Thus command set a $a$a would change a's value to bb.
+
+(33) Run
+     set a b
+     set $a $a$a
+     echo $a
+
+     You will see it prints:
+     b
+    
+     echo $b
+
+     You will see it prints:
+     bb
+
+     This is correct because $a is equal to b. So command set $a $a$a is equal to set b bb. So a's value is not changed and
+     b's value is bb.
+
+(34) Run
+     echo $zzz
+
+     You will see it prints:
+     (Actually nothing)
+
+     This is correct because in my implementation, if $ is followed by a valid variable name, but the varible is not set before,
+     we would evaluate it to an empty string "".
+
+(35) Run
+     echo $!@#aaa
+
+     You will see it prints:
+     $!@#
+
+     This is correct because in my implementation, if $ is followed by a invalid name, we would keep everything behind $
+     (including $)
+
+(36) Run
+     set a b
+     echo $!@#$a
+
+     You will see it prints:
+     $!@#b
+
+     This is correct because in my implementation, I start the $ evaluation from the last $ I met. So we first evaluate
+     $a to b. And it becomes echo $!@#b. Then the $ followd by invalid name will be kept. So the result is $!@#b.
+
+(37) Run
+     set a b
+     set b c
+     echo $$a
+
+     You will see it prints:
+     c
+
+     This is correct because we do $ evaluation twice. In my implementation, I evaluate the last $ first, evaluating $a to b.
+     So the command is now echo $b. Then I evaluate the whole command again, starting from the last $, evaluating $b to c.
+     So the result is c.
+
+(38) Run
+     set a b
+     set ab ccc
+     echo $a$a
+
+     You will see it prints:
+     ccc
+
+     This is correct because I first evaluate $a to b and then the command become echo $ab. I then find the longest match in the
+     new command and evaluate $ab to ccc.
+
+(39) Run
+     set A a
+     env
+
+     You will see it prints a list of environment variables. But A is not exported yet.
+
+     This is correct because the varible is not placed in the envinronment before export.
+
+(40) Run
+     set A a
+     export A
+     env
+
+     You will see it prints a list of environment variables, including A=a.
+
+     This is correct because after export, the variable should be put in the environment.
+
+(41) Run
+     set A a
+     exprot A
+     set A aa
+     env
+
+     You will see it prints a list of environment varibales, including A=a.
+
+     This is correct because although A's value is updated, the new value is not exported into the environment.
+
+(42) Run
+     export     or   export a   b  c
+
+     You will see it prints:
+     Wrong number of arguments
+
+     This is correct because command export only takes one argument.
+
+(43) Run
+     export !@#
+
+     You will see it prints:
+     Invalid variable name.
+
+     This is correct because a variable name must be a combination of letters, underscores, numbers.
+
+(44) Run
+     set ECE551PATH /home/wc148/ece551/mp_miniproject
+     export ECE551PATH
+     ls
+
+     You will see it prints:
+     Command ls not found
+
+     This is correct because ECE551PATH is where we search the command whose name does not have a /. So now we change the
+     ECE551PATH, we cannot find the command ls anymore.
+
+(45) Run
+     set ECE551PATH /home/wc148/ece551/mp_miniproject
+     export ECE551PATH
+     /bin/ls
+
+     You will see it prints all the files and directories under the current directory.
+
+     This is correct because for for a path name with /, we do not need to search the path. We can still execute it.
+
+(46) Run
+     set ECE551PATH /home/wc148/ece551/mp_miniproject
+     export ECE551PATH
+     myShell
+
+     You will see it prints a new prompt:
+     myShell:/home/wc148/ece551/mp_miniproject $
+
+     This is correct because we have changed our ECE551PATH to our working directory. So command names that we can find under this
+     path can now be typed without /.
+
+(47) Run
+     set ECE551PATH /home/wc148/ece551/mp_miniproject
+     export ECE551PATH
+     /usr/bin/env
+
+     You will see it prints a list of environment variables,including:
+     PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+     ECE551PATH=/home/wc148/ece551/mp_miniproject
+
+     This is correct because we export ECE551PATH and do not affect PATH. And also command ls cannot be found now, which proves
+     that we are searching ECE551PATH not PATH.
+
+(48) Run
+     set PATH /bin
+     export PATH
+     /usr/bin/env
+
+     You will see it prints a list of environment variables, including:
+     PATH=/bin
+     ECE551PATH=/bin
+
+     This is correct because in my implementation, in order to reflect the change in PATH, whenever PATH is changed, ECE551PATH
+     would change to the same as PATH. However, changing ECE551PATH does not affect PATH.
+
+(49) Run
+     set v hello
+     inc v
+     echo $v
+
+     You will see it prints:
+     1
+
+     This is correct because if v does not represent a number in base10, the initial value is treated as 0 and incremented to 1. 
+
+(50) Run
+     inc vv
+     echo $vv
+
+     You will see it prints:
+     1
+
+     This is correct because if v is nto currently set, the initial value is treated as 0 and incremented to 1.
+
+(51) Run
+     set v 12HHH
+     inc v
+     echo $v
+     
+     You will see it prints:
+     1
+
+     This is correct because if v does not represent a number in base10, the initial value is treated as 0 and incremented to 1. 
+
+(52) Run
+     set v 11
+     (It is actually "set v 11   ")
+     inc v
+     echo $v
+
+     You will see it prints:
+     1
+
+     This is correct because in my implementation, v's value is "11   ". So it is not a number,then its initial value is treated
+     as 0, incremented to 1.
+
+(53) Run
+     set v 11.11.11
+     inc v
+     echo $v
+
+     You will see it prints:
+     1
+
+     This is correct because if v does not represent a number in base10, the initial value is treated as 0 and incremented to 1. 
+
+(54) Run
+     set v 5
+     inc v
+     echo $v
+
+     You will see it prints:
+     6
+
+     This is correct because v's value is a number 5. Increment it to 6.
+
+(55) Run
+     set v 1.7
+     inc v
+     echo $v
+
+     You will see it prints:
+     2.7
+
+     This is correct because v's value is a number 1.7. Increment it to 2.7
+
+(56) Run
+     set v -0.8
+     inc v
+     echo $v
+
+     You will see it prints:
+     0.2
+
+     This is correct because v's value is a number -0.8. Increment it to 0.2
+
+(57) Run
+     set v -5
+     inc v
+     echo $v
+
+     You will see it prints:
+     -4
+
+     This is correct because v's value is a number -5. Increment it to -4
